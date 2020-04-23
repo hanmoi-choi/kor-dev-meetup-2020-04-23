@@ -1,0 +1,147 @@
+* Slide 1 | Function `add 10`
+#+begin_src ruby :results output
+  def multiply_ten(input)
+      input * 10
+  end
+
+  puts multiply_ten(1)
+  puts multiply_ten(2)
+#+end_src
+
+#+results:
+: 10
+: 20
+
+* Slide 3 | Function - Not Complete
+#+begin_src ruby :results output
+  def multiply_ten_incomplete(input)
+      if input < 3
+        return input * 10
+      end
+  end
+
+  puts multiply_ten_incomplete(1)
+  puts multiply_ten_incomplete(3)
+#+end_src
+
+#+results:
+: 10
+:
+
+* Slide 5 | Function - Non-Deterministic
+#+begin_src ruby :results output
+  @state = true
+
+  def multiply_ten_non_deterministic(input)
+      if @state == true
+        return input * 10
+      else
+        return input * 20
+      end
+  end
+
+  puts multiply_ten_non_deterministic(1)
+  @state = false
+  puts multiply_ten_non_deterministic(1)
+#+end_src
+
+#+results:
+: 10
+: 20
+
+* Slide 8.a | Side Effect 1.
+#+begin_src ruby :results output
+  @global = 1
+
+  def add_one_impure(input)
+      one_added = input + @global
+      @global +=1
+      return one_added
+  end
+
+  def add_two_numbers(input_1, input_2)
+      return input_1 + input_2
+  end
+
+  one_added = add_one_impure(10)
+
+  print "Add two numbers with `oned_added`: "
+  puts add_two_numbers(one_added, one_added)
+
+  @global = 1
+  print "Add two numbers with `function call`: "
+  puts add_two_numbers(add_one_impure(10), add_one_impure(10))
+#+end_src
+
+#+results:
+: Add two numbers with `oned_added`: 22
+: Add two numbers with `function call`: 23
+
+* Slide 8.b | Side Effect 2.
+#+begin_src ruby :results output
+
+  def add_one_impure(input)
+      puts "Side Effect - Boom!"
+      return input + 1
+  end
+
+  def add_two_numbers(input_1, input_2)
+      return input_1 + input_2
+  end
+
+  one_added = add_one_impure(10)
+
+  print "Add two numbers with `oned_added`: "
+  puts add_two_numbers(one_added, one_added)
+
+  puts "----------------------------------------"
+  puts "Add two numbers with `function call`: "
+  puts add_two_numbers(add_one_impure(10), add_one_impure(10))
+#+end_src
+
+#+results:
+: Side Effect - Boom!
+: Add two numbers with `oned_added`: 22
+: ----------------------------------------
+: Add two numbers with `function call`:
+: Side Effect - Boom!
+: Side Effect - Boom!
+: 22
+
+* Slide 10 | Pure - Referential Transparency
+#+begin_src ruby :results output
+
+  def add_one_pure(input)
+      return input + 1
+  end
+
+  def add_two_numbers(input_1, input_2)
+      return input_1 + input_2
+  end
+
+  one_added = add_one_pure(10)
+
+  print "Add two numbers with `oned_added`: "
+  puts add_two_numbers(one_added, one_added)
+  print "Add two numbers with `function call`: "
+  puts add_two_numbers(add_one_pure(10), add_one_pure(10))
+#+end_src
+
+#+results:
+: Add two numbers with `oned_added`: 22
+: Add two numbers with `function call`: 22
+* Slide 16 | Closure or Currying
+#+begin_src ruby :results output
+  def add_two(input_1)
+    closure_or_currying = Proc.new do |input_2|
+      input_1 + input_2
+    end
+
+    return closure_or_currying
+  end
+
+  puts add_two(10).call(20)
+#+end_src
+
+#+results:
+: 30

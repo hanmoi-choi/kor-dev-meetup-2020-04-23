@@ -1,0 +1,170 @@
+* Slide 13 | Example
+#+begin_src haskell :results session
+  addTwo_1 :: Num a => a -> a -> a
+  addTwo_1 x y = x + y
+
+  addTwo_2 :: Num a => a -> (a -> a)
+  addTwo_2 x = \y -> x + y
+
+  addTwo_1 1 2
+  addTwo_2 1 2
+#+end_src
+
+#+results:
+: 3
+
+* Slide 14 | Type
+#+begin_src haskell :results session
+  -- addTwo_1 :: Num a => a -> a -> a
+  addTwo_1 :: Num -> Num -> Num
+  addTwo_1 x y = x + y
+#+end_src
+
+* Slide 14 | Currying
+#+begin_src haskell :results session
+  -- addTwo_1 :: Num a => a -> a -> a
+  addTwo_1 :: Num -> Num -> Num
+  addTwo_1 x y = x + y
+
+  -- addTwo_2 :: Num a => a -> (a -> a)
+  addTwo_2 :: Num -> (Num -> Num)
+  addTwo_2 x = \y -> x + y
+#+end_src
+
+* Slide 20 | Effects
+#+begin_src haskell :results session
+  [1, 2, 3]
+
+  Just 10
+
+  Right 1
+
+  IO 10
+
+  [1, 2, 3] + 3
+
+  Just 10 + 3
+
+  Right 1 + 3
+
+  IO 10 + 3
+#+end_src
+
+* Slide 25 | Functor Question
+#+begin_src haskell :results session
+  addTen :: Num -> Num
+  addTen x = x + 10
+
+  addTenForEffect = undefined
+
+#+end_src
+
+* Slide 25 | Functor Answer
+#+begin_src haskell :results session
+  addTen :: Num -> Num
+  addTen x = x + 10
+
+  addTenForEffect :: Functor F => F Num -> F Num
+  addTenForEffect fx = fmap addTen fx
+
+  addTenForEffect [10, 20, 30]
+  --addTenForEffect Just 10
+  --addTenForEffect Right 20
+  --addTenForEffect $ pure 30 :: IO Int
+#+end_src
+
+
+* Slide 26 | fmap
+#+begin_src haskell :results session
+  fmap :: Functor F => (a -> b) -> (F a -> F b)
+
+  fmap :: (Int -> Int) -> (Maybe Int -> Maybe Int)
+  fmap :: (Int -> String) -> ([Int] -> [String])
+  fmap :: (String -> Int) -> (IO String -> Io Int)
+#+end_src
+
+* Slide 31 | Solution
+#+begin_src haskell :results session
+  initialIOValue :: IO Int
+  initialIOValue = pure 10
+
+  multiplyTen :: Int -> Int
+  multiplyTen x = x * 10
+
+  multiplyTen :: Functor F => F Int -> F Int
+  multiplyTenWithEffect = fmap multiplyTen
+
+  appendHello :: Int -> String
+  appendHello x = "Hello " ++ show x
+
+  appendHelloWithEffect :: Functor F => F Int -> F String
+  appendHelloWithEffect = fmap appendHello
+
+  applyBothFuncWithEffect :: Functor F => F Int -> F String
+  applyBothFuncWithEffect = appendHelloWithEffect . multiplyTenWithEffect
+
+  initialIOValue
+  applyBothFuncWithEffect initialIOValue
+#+end_src
+
+#+results:
+: Hello 100
+* Slide 34 | FP Constraints
+#+begin_src haskell :results session
+  type Url = String
+  type Content = String
+
+  readTwitterFeed :: Url -> IO Content
+  readTwitterFeed url = pure "Here is your Tweeter Content"
+
+  -- Return Tweeter Url from Users
+  yourInitialUserInput :: IO Url
+  yourInitialUserInput = pure "https://tweeter.com/adb/feed"
+
+  afterCallTweeter :: IO (IO Content)
+  afterCallTweeter = fmap readTwitterFeed yourInitialUserInput
+
+  afterCallTweeter
+#+end_src
+
+#+results:
+#+begin_example
+Prelude> Prelude>
+<interactive>:194:1-16: error:
+    • Ambiguous type variables ‘f20’,
+                               ‘f10’ arising from a use of ‘print’
+      prevents the constraint ‘(Show
+                                  (f20 (f10 [Char])))’ from being solved.
+      Probable fix: use a type annotation to specify what ‘f20’,
+                                                          ‘f10’ should be.
+      These potential instances exist:
+        instance (Show a, Show b) => Show (Either a b)
+          -- Defined in ‘Data.Either’
+        instance Show a => Show (Maybe a) -- Defined in ‘GHC.Show’
+        instance (Show a, Show b) => Show (a, b) -- Defined in ‘GHC.Show’
+        ...plus 14 others
+        ...plus one instance involving out-of-scope types
+        (use -fprint-potential-instances to see them all)
+    • In a stmt of an interactive GHCi command: print it
+#+end_example
+
+* Slide 35 | Fix with Monad
+#+begin_src haskell :results session
+  type Url = String
+  type Content = String
+
+  readTwitterFeed :: Url -> IO Content
+  readTwitterFeed url = pure "Here is your Tweeter Content"
+
+  -- Return Tweeter Url from Users
+  yourInitialUserInput :: IO Url
+  yourInitialUserInput = pure "https://tweeter.com/adb/feed"
+
+  afterCallTweeter :: IO Content
+  afterCallTweeter = yourInitialUserInput >>= readTwitterFeed
+
+  yourInitialUserInput
+#+end_src
+
+#+results:
+: Prelude> Prelude> "https://tweeter.com/adb/feed"
